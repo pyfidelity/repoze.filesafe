@@ -41,6 +41,16 @@ class FileSafeDataManager:
         self.vault[path] = dict(tempfile=file.name)
         return file
 
+    def consume_file(self, path, source, mode='rb'):
+        if path in self.vault:
+            if self.vault[path].get('deleted', False):
+                del self.vault[path]
+            else:
+                raise ValueError("%s is already taken", path)
+        file = open(source, mode)
+        self.vault[path] = dict(tempfile=file.name, moved=True, has_original=False)
+        return file
+
     def open_file(self, path, mode="r"):
         if path in self.vault:
             info = self.vault[path]
